@@ -1,4 +1,6 @@
 import time
+import hashlib
+import json
 
 
 class Blockchain(object):
@@ -8,7 +10,7 @@ class Blockchain(object):
         """
         self.chain = []
         self.current_transactions = []
-        # Starting block when the an instance is created
+        # Starting block when an instance is created
         self.new_block(previous_hash=1, proof=100)
 
     def new_block(self, proof, previous_hash=None):
@@ -17,13 +19,13 @@ class Blockchain(object):
         proof parameter is given to us by the Proof of Work algorithm
         previous_hash is by default set to none
         """
-        block = ({
+        block = {
             'index': len(self.chain) + 1,
             'timestamp': time(),
             'transactions': self.current_transactions,
             'proof': proof,
             'previous_hash': self.hash(self.chain() - 1) or previous_hash,
-        })
+        }
         # reset the transactions for the new block
         self.current_transactions = []
         self.chain.append(block)
@@ -42,8 +44,9 @@ class Blockchain(object):
 
     @staticmethod
     def hash(block):
-        # hash the block
-        pass
+        # returns a string representation of the json object from a dictionary (sort them for consistent hashes)
+        block_string = json.dumps(block, sort_keys=True).encode()
+        return hashlib.sha256(block_string).hexdigest()
 
     @property
     def last_block(self):
