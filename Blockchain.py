@@ -1,6 +1,8 @@
 import time
 import hashlib
 import json
+# generate random objects of 128 bits as IDs
+import uuid
 
 
 class Blockchain(object):
@@ -10,6 +12,7 @@ class Blockchain(object):
         """
         self.chain = []
         self.current_transactions = []
+
         # Starting block when an instance is created
         self.new_block(previous_hash=1, proof=100)
 
@@ -41,6 +44,29 @@ class Blockchain(object):
             'amount': amount,
         })
         return self.last_block['index'] + 1
+
+    def proof_of_work(self, last_proof):
+        """
+        Proof of work aka HASHCASH: simple implementation
+        We will find a number p (new proof) that when hashed hash(p,last_proof) gives us a hash with 4 leading zeros
+        the new hash (p) will start with 0
+        """
+
+        new_proof = 0
+        while self.valid_proof(last_proof, new_proof) is False:
+            new_proof += 1
+
+        return new_proof
+
+    @staticmethod
+    def valid_proof(last_proof, new_proof):
+        """
+        return true if the hash contains 4 leading zeros otherwise false
+        """
+
+        guess = f'{last_proof, new_proof}'.encode()
+        guess_hash = hashlib.sha256(guess).hexdigest()
+        return guess_hash[:4] == "0000"
 
     @staticmethod
     def hash(block):
