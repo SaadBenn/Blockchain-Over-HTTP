@@ -2,7 +2,8 @@ import time
 import hashlib
 import json
 # generate random objects of 128 bits as IDs
-import uuid
+from uuid import uuid4
+from flask import Flask, jsonify
 
 
 class Blockchain(object):
@@ -70,11 +71,53 @@ class Blockchain(object):
 
     @staticmethod
     def hash(block):
-        # returns a string representation of the json object from a dictionary (sort them for consistent hashes)
+        """
+        returns a string representation of the json object from a dictionary (sort them for consistent hashes)
+        """
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
     @property
     def last_block(self):
-        # return the last block in th chain
+        """
+        return the last block in th chain
+        """
         return self.chain[-1]
+
+
+# *****************************************************************************
+#                   Flask boilerplate code
+# *****************************************************************************
+
+# server will be a single node
+app = Flask(__name__)
+
+# get a unique identifier
+unique_node_identifier = str(uuid4()).replace('-', '')
+
+# get an instance of Blockchain class
+blockchain = Blockchain()
+
+
+@app.route('/mine', methods=['GET'])
+def mine():
+    return "new mine"
+
+
+@app.route('/transactions/new', methods=['POST'])
+def new_transaction():
+    return "new transaction"
+
+
+@app.route('/chain', methods=['GET'])
+def get_chain():
+    result = {
+        'chain': blockchain.chain,
+        'length': len(blockchain.chain)
+    }
+
+    return jsonify(result), 200
+
+
+if __name__ == '__main__':
+    app.run(host= '0.0.0.0', port=5000)
