@@ -3,7 +3,7 @@ import hashlib
 import json
 # generate random objects of 128 bits as IDs
 from uuid import uuid4
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 
 class Blockchain(object):
@@ -106,7 +106,17 @@ def mine():
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
-    return "new transaction"
+
+    values = request.get_json(force=True)
+
+    required = ['sender', 'recipient', 'amount']
+    if not all(field in values for field in required):
+        return 'Missing fields', 400
+
+    transaction_index = blockchain.new_transaction(values['sender'], ['recipient'], ['amount'])
+    response = {'message': f'Transaction to be added {transaction_index}'}
+
+    return jsonify(response), 201
 
 
 @app.route('/chain', methods=['GET'])
